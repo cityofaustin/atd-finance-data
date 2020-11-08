@@ -1,5 +1,4 @@
-# docker run -it --rm --env-file env_file -v /Users/john/Dropbox/atd/atd-finance-oracle:/app atddocker/finance-data /bin/bash
-docker run -it --rm --env-file env_file atddocker/atd-finance-data:production /app/upload_to_s3.py master_agreements
+# docker run -it --rm --env-file env_file atddocker/atd-finance-data:production /app/upload_to_s3.py master_agreements
 
 import argparse
 import io
