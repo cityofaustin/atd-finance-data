@@ -1,3 +1,4 @@
+# Build and push docker image with production **and** staging tags
 name: Docker Image CI
 
 on:
