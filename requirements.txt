@@ -1,3 +1,4 @@
 # this library requires the cx_Oracle package, but we source it from our
 # ready-made Oracle docker container: https://github.com/cityofaustin/atd-oracle-py
 boto3==1.14.*
+knackpy==1.0.*
