@@ -32,11 +32,11 @@ $ python upload_to_s3.py task_orders
 
 Required environmental variables, which are available in the DTS credential store:
 
-- `user`: The financial DB user name
-- `password`: The financial DB user's password
-- `host`: The financial DB's host address
-- `port`: The financial DB's port
-- `service`: The financial DB's service name
-- `bucket`: The destination S3 bucket name on AWS
+- `USER`: The financial DB user name
+- `PASSWORD`: The financial DB user's password
+- `HOST`: The financial DB's host address
+- `PORT`: The financial DB's port
+- `SERVICE`: The financial DB's service name
+- `BUCKET`: The destination S3 bucket name on AWS
 - `AWS_ACCESS_KEY_ID`: The access key for your AWS account
 - `AWS_SECRET_ACCESS_KEY`: The secret key for your AWS account
