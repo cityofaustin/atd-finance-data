@@ -10,12 +10,12 @@ import sys
 import boto3
 import cx_Oracle
 
-USER = os.getenv("user")
-PASSWORD = os.getenv("password")
-HOST = os.getenv("host")
-PORT = os.getenv("port")
-SERVICE = os.getenv("service")
-BUCKET = os.getenv("bucket")
+USER = os.getenv("USER")
+PASSWORD = os.getenv("PASSWORD")
+HOST = os.getenv("HOST")
+PORT = os.getenv("PORT")
+SERVICE = os.getenv("SERVICE")
+BUCKET = os.getenv("BUCKET")
 
 # we are explict about the fields we select not only because these views hold data we
 # don't care about but also because any datetime fields would require extra handling in
