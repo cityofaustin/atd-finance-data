@@ -19,6 +19,10 @@ def status_to_bool(value):
         raise ValueError(f"Unknown status provided to handler: {value}")
 
 
+def is_dept_2400(record):
+    return record["DEPT"] == "2400"
+
+
 # each top level key must be a financial record type. you probably dont want to mess w/
 # these. To add additional destination apps, follow the pattern used with
 # "data-tracker". Note that where "data-tracker" is used here corresponds to the use
@@ -42,15 +46,43 @@ FIELD_MAPS = {
         ],
     },
     "units": {
-        "knack_object": {"data-tracker": "object_189",},
+        "src_data_filter": {"finance-purchasing": is_dept_2400},
+        "knack_object": {
+            "data-tracker": "object_189",
+            "finance-purchasing": "object_7",
+        },
         "field_map": [
-            {"src": "DEPT_UNIT_ID", "data-tracker": "field_3687", "primary_key": True},
-            {"src": "DEPT_ID", "data-tracker": "field_3688"},
-            {"src": "DEPT", "data-tracker": "field_3584"},
-            {"src": "UNIT", "data-tracker": "field_3585"},
-            {"src": "UNIT_LONG_NAME", "data-tracker": "field_3689"},
-            {"src": "UNIT_SHORT_NAME", "data-tracker": "field_3586"},
-            {"src": "DEPT_UNIT_STATUS", "data-tracker": "field_3588",},
+            {"src": "DEPT_UNIT_ID", "data-tracker": "field_3687", "primary_key": True, "finance-purchasing": "field_902"},
+            {
+                "src": "DEPT_ID",
+                "data-tracker": "field_3688",
+                "finance-purchasing": "field_903",
+            },
+            {
+                "src": "DEPT",
+                "data-tracker": "field_3584",
+                "finance-purchasing": "field_431",
+            },
+            {
+                "src": "UNIT",
+                "data-tracker": "field_3585",
+                "finance-purchasing": "field_79",
+            },
+            {
+                "src": "UNIT_LONG_NAME",
+                "data-tracker": "field_3689",
+                "finance-purchasing": "field_904",
+            },
+            {
+                "src": "UNIT_SHORT_NAME",
+                "data-tracker": "field_3586",
+                "finance-purchasing": "field_77",
+            },
+            {
+                "src": "DEPT_UNIT_STATUS",
+                "data-tracker": "field_3588",
+                "finance-purchasing": "field_488",
+            },
         ],
     },
 }
