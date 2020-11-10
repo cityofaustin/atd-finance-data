@@ -27,6 +27,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/atd-finance-data:production
             ${{ secrets.DOCKER_USERNAME }}/atd-finance-data:staging
+            ${{ secrets.DOCKER_USERNAME }}/atd-finance-data:latest
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
