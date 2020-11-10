@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # docker run -it --rm --env-file env_file -v /Users/john/Dropbox/atd/atd-finance-data:/app atddocker/atd-finance-data:production /bin/bash
 # python s3_to_knack.py task_orders data-tracker
 """ Download financial data from AWS S3 and upsert to a Knack app"""
@@ -124,14 +125,14 @@ def handle_records(records_current, records_knack, field_map, app_name):
 
     return todos
 
+# for dev
+# def to_csv(data):
+#     import csv
 
-def to_csv(data):
-    import csv
-
-    with open("bob.csv", "w") as fout:
-        writer = csv.DictWriter(fout, fieldnames=data[0].keys())
-        writer.writeheader()
-        writer.writerows(data)
+#     with open("bob.csv", "w") as fout:
+#         writer = csv.DictWriter(fout, fieldnames=data[0].keys())
+#         writer.writeheader()
+#         writer.writerows(data)
 
 
 def main():

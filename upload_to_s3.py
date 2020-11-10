@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # docker run -it --rm --env-file env_file atddocker/atd-finance-data:production /app/upload_to_s3.py master_agreements
 
 import argparse
