@@ -140,7 +140,6 @@ def main():
     app_name = args.dest
     # get latest finance records from AWS S3
     records_current = download_json(bucket_name=BUCKET, fname=f"{record_type}.json")
-    to_csv(records_current)
     # fetch the same type of records from knack
     app = knackpy.App(app_id=KNACK_APP_ID, api_key=KNACK_API_KEY)
     knack_obj = FIELD_MAPS[record_type]["knack_object"][app_name]
@@ -149,7 +148,7 @@ def main():
     todos = handle_records(
         records_current, records_knack, FIELD_MAPS[record_type]["field_map"], app_name
     )
-    breakpoint()
+
     logging.info(f"{len(todos)} records to process.")
 
     for record in todos:
