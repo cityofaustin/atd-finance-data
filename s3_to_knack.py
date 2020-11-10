@@ -1,41 +1,20 @@
-# docker run -it --rm --env-file env_file atddocker/atd-finance-data:production /app/upload_to_s3.py master_agreements
-
+# docker run -it --rm --env-file env_file -v /Users/john/Dropbox/atd/atd-finance-data:/app atddocker/atd-finance-data:production /bin/bash
+# python s3_to_knack.py task_orders data-tracker
+""" Download financial data from AWS S3 and upsert to a Knack app"""
 import argparse
-import io
 import json
 import logging
 import os
 import sys
 
 import boto3
-import cx_Oracle
+import knackpy
 
-USER = os.getenv("USER")
-PASSWORD = os.getenv("PASSWORD")
-HOST = os.getenv("HOST")
-PORT = os.getenv("PORT")
-SERVICE = os.getenv("SERVICE")
+from config import FIELD_MAPS
+
 BUCKET = os.getenv("BUCKET")
-
-# we are explict about the fields we select not only because these views hold data we
-# don't care about but also because any datetime fields would require extra handling in
-# order to JSON-serialize them
-QUERIES = {
-    "task_orders": "select TK_DEPT, TASK_ORD_CD, TASKORDER_DESC, TK_STATUS, TK_TYPE, CURRENT_ESTIMATE, CHARGEDAMOUNT, BALANCE from DEPT_2400_TK_VW",
-    "units": "select DEPT_UNIT_ID, DEPT_ID, DEPT, UNIT, UNIT_LONG_NAME, UNIT_SHORT_NAME, DEPT_UNIT_STATUS from lu_dept_units",
-    "objects": "select OBJ_ID, OBJ_CLASS_ID, OBJ_CATEGORY_ID, OBJ_TYPE_ID, OBJ_GROUP_ID, OBJ_CODE, OBJ_LONG_NAME, OBJ_SHORT_NAME, OBJ_DESC, OBJ_REIMB_ELIG_STATUS, OBJ_STATUS, ACT_FL from lu_obj_cd",
-    "master_agreements": "select DOC_CD, DOC_DEPT_CD, DOC_ID, DOC_DSCR, DOC_PHASE_CD, VEND_CUST_CD, LGL_NM from DEPT_2400_MA_VW",
-}
-
-
-def fileobj(list_of_dicts):
-    """ convert a list of dictionaries to a json file-like object """
-    return io.BytesIO(json.dumps(list_of_dicts).encode())
-
-
-def get_conn(host, port, service, user, password):
-    dsn_tns = cx_Oracle.makedsn(host, port, service_name=service)
-    return cx_Oracle.connect(user=user, password=password, dsn=dsn_tns)
+KNACK_APP_ID = os.getenv("KNACK_APP_ID")
+KNACK_API_KEY = os.getenv("KNACK_API_KEY")
 
 
 def cli_args():
@@ -45,44 +24,137 @@ def cli_args():
     parser.add_argument(
         "name",
         type=str,
-        choices=list(QUERIES.keys()),
+        choices=list(FIELD_MAPS.keys()),
         help="The name of the financial data to be processed.",
+    )
+    parser.add_argument(
+        "dest",
+        type=str,
+        choices=["data-tracker"],
+        help="The name of the destination Knack app",
     )
     return parser.parse_args()
 
 
+def download_json(*, bucket_name, fname):
+    """Download a JSON file from S3 and de-serialize it
+
+    Args:
+        bucket_name (str): The host bucket name
+        fname (str): The file to be downloaded
+        as_dict (bool, optional): If the file should be returned a dict. If true,
+            assumes file contents are json. Defaults to True.
+
+    Returns:
+        list or dict: The decoded and deserialized JSON content
+    """
+    s3 = boto3.resource("s3")
+    obj = s3.Object(bucket_name, fname)
+    obj_data = obj.get()["Body"].read().decode()
+    return json.loads(obj_data)
+
+
+def get_pks(fields, app_name):
+    """ return the src and destination field name of the primay key """
+    pk_field = [f for f in fields if f.get("primary_key")]
+    try:
+        assert len(pk_field) == 1
+    except AssertionError:
+        raise ValueError(
+            "Multiple primary keys found. There's an error in the field map configuration."
+        )
+    return pk_field[0]["src"], pk_field[0][app_name]
+
+
+def is_equal(rec_current, rec_knack):
+    tests = [rec_current[key] == rec_knack[key] for key in rec_current.keys()]
+    return all(tests)
+
+
+def create_mapped_record(rec_current, field_map, app_name):
+    """Map the data from the current record (from the financial DB) to the destination
+    app schema """
+    mapped_record = {}
+
+    for field in field_map:
+        val = rec_current[field["src"]]
+        handler_func = field.get("handler")
+        mapped_record[field[app_name]] = val if not handler_func else handler_func(val)
+
+    return mapped_record
+
+
+def handle_records(records_current, records_knack, field_map, app_name):
+    """Compare each current record (from the financial DB) to the data in the
+    destination Knack app. If any values have are different, or if the record doesn't
+    exist in the destination app, prepare a record payload
+
+    Args:
+        records_current (list): The current records from the financial DB
+        records_knack (list): The existing records in the desination knack app
+        field_map (list): A list of field mapping data (from config.py)
+        app_name (str): The name of the destination app.
+
+    Returns:
+        list: A list of records to be created or updated in the destination app.
+    """
+    # identify the primary key field name in the src data and the destination object
+    current_pk, knack_pk = get_pks(field_map, app_name)
+    todos = []
+    for rec_current in records_current:
+        matched = False
+        id_ = rec_current[current_pk]
+        for rec_knack in records_knack:
+            if rec_knack[knack_pk] == id_:
+                matched = True
+                # we create the record payload (and there by apply field mappings and
+                # handlers) before we determine if this record needs to be
+                # created/modified, this way we make sure we use apples <> apples
+                # when comparing the old vs new record
+                mapped_record = create_mapped_record(rec_current, field_map, app_name)
+
+                if not is_equal(mapped_record, rec_knack):
+                    mapped_record["id"] = rec_knack["id"]
+                    todos.append(mapped_record)
+
+                break
+        if not matched:
+            mapped_record = create_mapped_record(rec_current, field_map, app_name)
+            todos.append(mapped_record)
+
+    return todos
+
+
+def to_csv(data):
+    import csv
+
+    with open("bob.csv", "w") as fout:
+        writer = csv.DictWriter(fout, fieldnames=data[0].keys())
+        writer.writeheader()
+        writer.writerows(data)
+
+
 def main():
     args = cli_args()
-    name = args.name
-    conn = get_conn(HOST, PORT, SERVICE, USER, PASSWORD)
-    query = QUERIES[name]
-    cursor = conn.cursor()
-    # some queries may take a while to complete:
-    # - task orders: ~2 min
-    # - units: ~1 min
-    # - objects: 30 seconds
-    # - master_agreements: 15 seconds
-    cursor.execute(query)
-
-    # define row handler which returns each row as a dict
-    # h/t https://stackoverflow.com/questions/35045879/cx-oracle-how-can-i-receive-each-row-as-a-dictionary
-    cursor.rowfactory = lambda *args: dict(
-        zip([d[0] for d in cursor.description], args)
+    record_type = args.name
+    app_name = args.dest
+    # get latest finance records from AWS S3
+    records_current = download_json(bucket_name=BUCKET, fname=f"{record_type}.json")
+    to_csv(records_current)
+    # fetch the same type of records from knack
+    app = knackpy.App(app_id=KNACK_APP_ID, api_key=KNACK_API_KEY)
+    knack_obj = FIELD_MAPS[record_type]["knack_object"][app_name]
+    records_knack = [dict(record) for record in app.get(knack_obj)]
+    # identify new/changed records and map to destination Knack app schema
+    todos = handle_records(
+        records_current, records_knack, FIELD_MAPS[record_type]["field_map"], app_name
     )
-    rows = cursor.fetchall()
-    conn.close()
+    breakpoint()
+    logging.info(f"{len(todos)} records to process.")
 
-    if not rows:
-        raise IOError(
-            "No data was retrieved from the financial database. This should never happen!"
-        )
-
-    file = fileobj(rows)
-    file_name = f"{name}.json"
-    session = boto3.session.Session()
-    client = session.client("s3")
-    client.upload_fileobj(file, BUCKET, file_name,)
-    logging.info(f"{len(rows)} records processed.")
+    for record in todos:
+        method = "create" if not record.get("id") else "update"
+        app.record(data=record, method=method, obj=knack_obj)
 
 
 if __name__ == "__main__":
