@@ -31,7 +31,7 @@ def cli_args():
     parser.add_argument(
         "dest",
         type=str,
-        choices=["data-tracker"],
+        choices=["data-tracker", "finance-purchasing"],
         help="The name of the destination Knack app",
     )
     return parser.parse_args()
@@ -115,6 +115,7 @@ def handle_records(records_current, records_knack, field_map, app_name):
                 mapped_record = create_mapped_record(rec_current, field_map, app_name)
 
                 if not is_equal(mapped_record, rec_knack):
+                    breakpoint()
                     mapped_record["id"] = rec_knack["id"]
                     todos.append(mapped_record)
 
@@ -124,6 +125,7 @@ def handle_records(records_current, records_knack, field_map, app_name):
             todos.append(mapped_record)
 
     return todos
+
 
 # for dev
 # def to_csv(data):
@@ -135,12 +137,27 @@ def handle_records(records_current, records_knack, field_map, app_name):
 #         writer.writerows(data)
 
 
+def apply_src_data_filter(records_current, src_data_filter_func):
+    """ Filter records from financial DB """
+    if not src_data_filter_func:
+        return records_current
+    else:
+        return list(filter(src_data_filter_func, records_current))
+
+
 def main():
     args = cli_args()
     record_type = args.name
     app_name = args.dest
     # get latest finance records from AWS S3
-    records_current = download_json(bucket_name=BUCKET, fname=f"{record_type}.json")
+    records_current_unfiltered = download_json(
+        bucket_name=BUCKET, fname=f"{record_type}.json"
+    )
+    src_data_filter_func = FIELD_MAPS[record_type]["src_data_filter"].get(app_name)
+    records_current = apply_src_data_filter(
+        records_current_unfiltered, src_data_filter_func
+    )
+
     # fetch the same type of records from knack
     app = knackpy.App(app_id=KNACK_APP_ID, api_key=KNACK_API_KEY)
     knack_obj = FIELD_MAPS[record_type]["knack_object"][app_name]
@@ -151,7 +168,7 @@ def main():
     )
 
     logging.info(f"{len(todos)} records to process.")
-
+    breakpoint()
     for record in todos:
         method = "create" if not record.get("id") else "update"
         app.record(data=record, method=method, obj=knack_obj)
