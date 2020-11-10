@@ -19,7 +19,7 @@ At a high level, these utilities do two things:
 
 You should know that scripts from this repo run on [ATD's Airflow instance](https://github.com/cityofaustin/atd-airflow).
 
-The easiest path to running these utilities locally to build this repo's Docker image, or pull it from `atddocker/atd-finance-data`.
+The easiest path to running these utilities locally is to build this repo's Docker image, or pull it from `atddocker/atd-finance-data`.
 This container builds on top of [atd-oracle-py](https://github.com/cityofaustin/atd-oracle-py), which solves the headache of installing `cx_Oracle`.
 
 ## Uploading records to AWS S3
@@ -40,3 +40,21 @@ Required environmental variables, which are available in the DTS credential stor
 - `BUCKET`: The destination S3 bucket name on AWS
 - `AWS_ACCESS_KEY_ID`: The access key for your AWS account
 - `AWS_SECRET_ACCESS_KEY`: The secret key for your AWS account
+
+## Upssert records to a Knack app
+
+`s3_to_knack.py` downloads financial records from S3 and upserts them into a Knack app. The record type and destination app must be specified as positional CLI arguments, like so:
+
+```shell
+$ python s3_to_knack.py task_orders data-tracker
+```
+
+Any destination app must have a field mapping defined in `config.py`.
+
+Required environmental variables, which are available in the DTS credential store:
+
+- `BUCKET`: The destination S3 bucket name on AWS
+- `AWS_ACCESS_KEY_ID`: The access key for your AWS account
+- `AWS_SECRET_ACCESS_KEY`: The secret key for your AWS account
+- `KNACK_APP_ID`:  The Knack app ID of the destiantion knack app
+- `KNACK_API_KEY`: The kanck API key of the destination knack app
