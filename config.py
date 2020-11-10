@@ -19,6 +19,10 @@ def status_to_bool(value):
         raise ValueError(f"Unknown status provided to handler: {value}")
 
 
+# each top level key must be a financial record type. you probably dont want to mess w/
+# these. To add additional destination apps, follow the pattern used with
+# "data-tracker". Note that where "data-tracker" is used here corresponds to the use
+# of "app_name" name throughout the app
 FIELD_MAPS = {
     "task_orders": {
         "knack_object": {"data-tracker": "object_86",},
@@ -30,10 +34,7 @@ FIELD_MAPS = {
                 "data-tracker": "field_2632",
                 "handler": pad_angle_brackets,
             },
-            {
-                "src": "TK_STATUS",
-                "data-tracker": "field_3691",
-            },
+            {"src": "TK_STATUS", "data-tracker": "field_3691",},
             {"src": "TK_TYPE", "data-tracker": "field_3580"},
             {"src": "CURRENT_ESTIMATE", "data-tracker": "field_3684"},
             {"src": "CHARGEDAMOUNT", "data-tracker": "field_3685"},
@@ -49,10 +50,7 @@ FIELD_MAPS = {
             {"src": "UNIT", "data-tracker": "field_3585"},
             {"src": "UNIT_LONG_NAME", "data-tracker": "field_3689"},
             {"src": "UNIT_SHORT_NAME", "data-tracker": "field_3586"},
-            {
-                "src": "DEPT_UNIT_STATUS",
-                "data-tracker": "field_3588",
-            },
+            {"src": "DEPT_UNIT_STATUS", "data-tracker": "field_3588",},
         ],
     },
 }
