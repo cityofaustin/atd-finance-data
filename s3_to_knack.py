@@ -115,7 +115,6 @@ def handle_records(records_current, records_knack, field_map, app_name):
                 mapped_record = create_mapped_record(rec_current, field_map, app_name)
 
                 if not is_equal(mapped_record, rec_knack):
-                    breakpoint()
                     mapped_record["id"] = rec_knack["id"]
                     todos.append(mapped_record)
 
@@ -153,9 +152,14 @@ def main():
     records_current_unfiltered = download_json(
         bucket_name=BUCKET, fname=f"{record_type}.json"
     )
-    src_data_filter_func = FIELD_MAPS[record_type]["src_data_filter"].get(app_name)
-    records_current = apply_src_data_filter(
-        records_current_unfiltered, src_data_filter_func
+    src_data_filter_func = (
+        FIELD_MAPS[record_type].get("src_data_filter", {}).get(app_name)
+    )
+
+    records_current = (
+        apply_src_data_filter(records_current_unfiltered, src_data_filter_func)
+        if src_data_filter_func
+        else records_current_unfiltered
     )
 
     # fetch the same type of records from knack
@@ -168,7 +172,7 @@ def main():
     )
 
     logging.info(f"{len(todos)} records to process.")
-    breakpoint()
+
     for record in todos:
         method = "create" if not record.get("id") else "update"
         app.record(data=record, method=method, obj=knack_obj)
