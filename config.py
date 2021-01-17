@@ -26,10 +26,11 @@ def is_dept_2400(record):
 # each top level key must be a financial record type. you probably dont want to mess w/
 # these. To add additional destination apps, follow the pattern used with
 # "data-tracker". Note that where "data-tracker" is used here corresponds to the use
-# of "app_name" name throughout the app
+# of "app_name" name throughout these scripts as well as in atd-knack-services
 FIELD_MAPS = {
     "task_orders": {
         "knack_object": {"data-tracker": "object_86",},
+        "coalesce_fields": ["BYR_FDU"], # docstring in s3_to_knack.py
         "field_map": [
             {"src": "TK_DEPT", "data-tracker": "field_1276"},
             {"src": "TASK_ORD_CD", "data-tracker": "field_1277", "primary_key": True},
