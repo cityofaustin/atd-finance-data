@@ -43,6 +43,7 @@ FIELD_MAPS = {
             {"src": "CURRENT_ESTIMATE", "data-tracker": "field_3684"},
             {"src": "CHARGEDAMOUNT", "data-tracker": "field_3685"},
             {"src": "BALANCE", "data-tracker": "field_3686"},
+            {"src": "BYR_FDU", "data-tracker": "field_3807"},
         ],
     },
     "units": {

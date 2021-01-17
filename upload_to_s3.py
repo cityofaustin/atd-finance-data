@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
-# docker run -it --rm --env-file env_file atddocker/atd-finance-data:production /app/upload_to_s3.py master_agreements
+# docker run -it --rm --env-file env_file -v /Users/john/Dropbox/atd/atd-finance-data:/app  atddocker/atd-finance-data:production /bin/bash
+"""
+Fetch financial records from the controller's office DB and **replace** data in AWS S3.
 
+For each record type (e.g., task orders), a single JSON file is uploaded/replaced in S3.
+"""
 import argparse
 import io
 import json
@@ -22,7 +26,7 @@ BUCKET = os.getenv("BUCKET")
 # don't care about but also because any datetime fields would require extra handling in
 # order to JSON-serialize them
 QUERIES = {
-    "task_orders": "select TK_DEPT, TASK_ORD_CD, TASKORDER_DESC, TK_STATUS, TK_TYPE, CURRENT_ESTIMATE, CHARGEDAMOUNT, BALANCE from DEPT_2400_TK_VW",
+    "task_orders": "select atd_tk.TK_DEPT, atd_tk.TASK_ORD_CD, atd_tk.TASKORDER_DESC, atd_tk.TK_STATUS, atd_tk.TK_TYPE, atd_tk.CURRENT_ESTIMATE, atd_tk.CHARGEDAMOUNT, atd_tk.BALANCE , buyer_tk.BYR_FDU FROM DEPT_2400_TK_VW atd_tk LEFT JOIN ( SELECT DISTINCT TASK_ORD_CD, BYR_FDU FROM REL_BUYER_SELLER_FDU_TK) buyer_tk ON atd_tk.TASK_ORD_CD = buyer_tk.TASK_ORD_CD",
     "units": "select DEPT_UNIT_ID, DEPT_ID, DEPT, UNIT, UNIT_LONG_NAME, UNIT_SHORT_NAME, DEPT_UNIT_STATUS from lu_dept_units WHERE DEPT in(2400,6207,2507)",
     "objects": "select OBJ_ID, OBJ_CLASS_ID, OBJ_CATEGORY_ID, OBJ_TYPE_ID, OBJ_GROUP_ID, OBJ_CODE, OBJ_LONG_NAME, OBJ_SHORT_NAME, OBJ_DESC, OBJ_REIMB_ELIG_STATUS, OBJ_STATUS, ACT_FL from lu_obj_cd",
     "master_agreements": "select DOC_CD, DOC_DEPT_CD, DOC_ID, DOC_DSCR, DOC_PHASE_CD, VEND_CUST_CD, LGL_NM from DEPT_2400_MA_VW",
@@ -59,7 +63,7 @@ def main():
     query = QUERIES[name]
     cursor = conn.cursor()
     # some queries may take a while to complete:
-    # - task orders: ~2 min
+    # - task orders: ~4 min
     # - units: ~1 min
     # - objects: 30 seconds
     # - master_agreements: 15 seconds
