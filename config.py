@@ -1,3 +1,9 @@
+import arrow
+
+
+""" Handlers must accept and return single value """
+
+
 def pad_angle_brackets(value):
     """ As it turns out, knack will remove (or at least hide or ignore?) text from a
     text field if it contains an unclosed left angle bracket (<) immediately followed 
@@ -20,10 +26,18 @@ def add_comma_separator(value):
     return f"{value:,.2f}"
 
 
-# each top level key must be a financial record type. you probably dont want to mess w/
-# these. To add additional destination apps, follow the pattern used with
-# "data-tracker". Note that where "data-tracker" is used here corresponds to the use
-# of "app_name" name throughout these scripts as well as in atd-knack-services
+def knack_current_timestamp(val, tz="US/Central"):
+    """Input val is ignored here as we generate a new value. Note that Knack needs an 
+    ISO datestring in local time without the timezone offset, or a "local" timestamp"""
+    return arrow.now(tz).format("YYYY-MM-DDTHH:mm:ss")
+
+
+"""
+Each top level key must be a financial record type. you probably dont want to mess w/
+these. To add additional destination apps, follow the pattern used with
+"data-tracker". Note that where "data-tracker" is used here corresponds to the use
+of "app_name" name throughout these scripts as well as in atd-knack-services
+"""
 FIELD_MAPS = {
     "task_orders": {
         "knack_object": {"data-tracker": "object_86",},
@@ -36,7 +50,7 @@ FIELD_MAPS = {
                 "data-tracker": "field_2632",
                 "handler": pad_angle_brackets,
             },
-            {"src": "TK_STATUS", "data-tracker": "field_3691",},
+            {"src": "TK_STATUS", "data-tracker": "field_3810",},
             {"src": "TK_TYPE", "data-tracker": "field_3580"},
             {
                 "src": "CURRENT_ESTIMATE",
@@ -54,6 +68,13 @@ FIELD_MAPS = {
                 "handler": add_comma_separator,
             },
             {"src": "BYR_FDU", "data-tracker": "field_3807"},
+            {
+                # appends modified date
+                "src": None,
+                "data-tracker": "field_3809",
+                "handler": knack_current_timestamp,
+                "ignore_diff": True,
+            },
         ],
     },
     "units": {

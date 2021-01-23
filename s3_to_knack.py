@@ -67,8 +67,8 @@ def get_pks(fields, app_name):
     return pk_field[0]["src"], pk_field[0][app_name]
 
 
-def is_equal(rec_current, rec_knack):
-    tests = [rec_current[key] == rec_knack[key] for key in rec_current.keys()]
+def is_equal(rec_current, rec_knack, keys):
+    tests = [rec_current[key] == rec_knack[key] for key in keys]
     return all(tests)
 
 
@@ -76,9 +76,8 @@ def create_mapped_record(rec_current, field_map, app_name):
     """Map the data from the current record (from the financial DB) to the destination
     app schema """
     mapped_record = {}
-
     for field in field_map:
-        val = rec_current[field["src"]]
+        val = rec_current.get(field["src"])
         handler_func = field.get("handler")
         mapped_record[field[app_name]] = val if not handler_func else handler_func(val)
 
@@ -102,6 +101,7 @@ def handle_records(records_current, records_knack, knack_pk, field_map, app_name
     # identify the primary key field name in the src data and the destination object
     todos = []
     mapped_records = [create_mapped_record(rec_current, field_map, app_name) for rec_current in records_current]
+    compare_keys = [field[app_name] for field in field_map if not field.get("ignore_diff")]
     for rec_current in mapped_records:
         matched = False
         id_ = rec_current[knack_pk]
@@ -112,7 +112,7 @@ def handle_records(records_current, records_knack, knack_pk, field_map, app_name
                 # # handlers) before we determine if this record needs to be
                 # # created/modified, this way we make sure we use apples <> apples
                 # # when comparing the old vs new record
-                if not is_equal(rec_current, rec_knack):
+                if not is_equal(rec_current, rec_knack, compare_keys):
                     rec_current["id"] = rec_knack["id"]
                     todos.append(rec_current)
 
