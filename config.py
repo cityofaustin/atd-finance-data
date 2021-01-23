@@ -10,26 +10,24 @@ def pad_angle_brackets(value):
     return value.replace(">", " > ").replace("<", " < ")
 
 
-def status_to_bool(value):
-    if value.lower() == "active":
-        return True
-    if value.lower() == "inactive":
-        return False
-    else:
-        raise ValueError(f"Unknown status provided to handler: {value}")
-
-
 def is_dept_2400(record):
     return record["DEPT"] == "2400"
+
+
+def add_comma_separator(value):
+    """You may be surprised to learn that knack stores raw "curreny" field values as
+    strings with commas/thousands-separators. The "$" is omitted."""
+    return f"{value:,.2f}"
 
 
 # each top level key must be a financial record type. you probably dont want to mess w/
 # these. To add additional destination apps, follow the pattern used with
 # "data-tracker". Note that where "data-tracker" is used here corresponds to the use
-# of "app_name" name throughout the app
+# of "app_name" name throughout these scripts as well as in atd-knack-services
 FIELD_MAPS = {
     "task_orders": {
         "knack_object": {"data-tracker": "object_86",},
+        "coalesce_fields": ["BYR_FDU"],  # docstring in s3_to_knack.py
         "field_map": [
             {"src": "TK_DEPT", "data-tracker": "field_1276"},
             {"src": "TASK_ORD_CD", "data-tracker": "field_1277", "primary_key": True},
@@ -40,9 +38,21 @@ FIELD_MAPS = {
             },
             {"src": "TK_STATUS", "data-tracker": "field_3691",},
             {"src": "TK_TYPE", "data-tracker": "field_3580"},
-            {"src": "CURRENT_ESTIMATE", "data-tracker": "field_3684"},
-            {"src": "CHARGEDAMOUNT", "data-tracker": "field_3685"},
-            {"src": "BALANCE", "data-tracker": "field_3686"},
+            {
+                "src": "CURRENT_ESTIMATE",
+                "data-tracker": "field_3684",
+                "handler": add_comma_separator,
+            },
+            {
+                "src": "CHARGEDAMOUNT",
+                "data-tracker": "field_3685",
+                "handler": add_comma_separator,
+            },
+            {
+                "src": "BALANCE",
+                "data-tracker": "field_3686",
+                "handler": add_comma_separator,
+            },
             {"src": "BYR_FDU", "data-tracker": "field_3807"},
         ],
     },
@@ -53,7 +63,12 @@ FIELD_MAPS = {
             "finance-purchasing": "object_7",
         },
         "field_map": [
-            {"src": "DEPT_UNIT_ID", "data-tracker": "field_3687", "primary_key": True, "finance-purchasing": "field_902"},
+            {
+                "src": "DEPT_UNIT_ID",
+                "data-tracker": "field_3687",
+                "primary_key": True,
+                "finance-purchasing": "field_902",
+            },
             {
                 "src": "DEPT_ID",
                 "data-tracker": "field_3688",
