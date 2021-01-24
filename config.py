@@ -40,8 +40,10 @@ of "app_name" name throughout these scripts as well as in atd-knack-services
 """
 FIELD_MAPS = {
     "task_orders": {
+        # any Knack app to be processed must have an object ID defined here
         "knack_object": {"data-tracker": "object_86",},
-        "coalesce_fields": ["BYR_FDU"],  # docstring in s3_to_knack.py
+        # see docstring about coalesce in s3_to_knack.py
+        "coalesce_fields": ["BYR_FDU"],
         "field_map": [
             {"src": "TK_DEPT", "data-tracker": "field_1276"},
             {"src": "TASK_ORD_CD", "data-tracker": "field_1277", "primary_key": True},
