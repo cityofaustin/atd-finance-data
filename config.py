@@ -45,27 +45,27 @@ FIELD_MAPS = {
         # see docstring about coalesce in s3_to_knack.py
         "coalesce_fields": ["BYR_FDU"],
         "field_map": [
-            {"src": "TK_DEPT", "data-tracker": "field_1276"},
-            {"src": "TASK_ORD_CD", "data-tracker": "field_1277", "primary_key": True},
+            {"src": "TASK_ORDER_DEPT", "data-tracker": "field_1276"},
+            {"src": "TASK_ORDER_ID", "data-tracker": "field_1277", "primary_key": True},
             {
-                "src": "TASKORDER_DESC",
+                "src": "TASK_ORDER_DESC",
                 "data-tracker": "field_2632",
                 "handler": pad_angle_brackets,
             },
-            {"src": "TK_STATUS", "data-tracker": "field_3810",},
-            {"src": "TK_TYPE", "data-tracker": "field_3580"},
+            {"src": "TASK_ORDER_STATUS", "data-tracker": "field_3810",},
+            {"src": "TASK_ORDER_TYPE", "data-tracker": "field_3580"},
             {
-                "src": "CURRENT_ESTIMATE",
+                "src": "TK_CURR_AMOUNT",
                 "data-tracker": "field_3684",
                 "handler": add_comma_separator,
             },
             {
-                "src": "CHARGEDAMOUNT",
+                "src": "CHARGED_AMOUNT",
                 "data-tracker": "field_3685",
                 "handler": add_comma_separator,
             },
             {
-                "src": "BALANCE",
+                "src": "TASK_ORDER_BAL",
                 "data-tracker": "field_3686",
                 "handler": add_comma_separator,
             },
