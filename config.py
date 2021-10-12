@@ -23,6 +23,8 @@ def is_dept_2400(record):
 def add_comma_separator(value):
     """You may be surprised to learn that knack stores raw "curreny" field values as
     strings with commas/thousands-separators. The "$" is omitted."""
+    if not value:
+        return "0.00"
     return f"{value:,.2f}"
 
 
