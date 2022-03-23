@@ -122,6 +122,9 @@ def transform_records(df):
         }
     )
 
+    # Creating Display Name field
+    df["DISPLAY_NAME"] = df["TASK_ORDER"] + " | " + df["NAME"]
+
     return df.to_dict("records")
 
 
@@ -145,7 +148,7 @@ def main(args):
             logger.debug(
                 "No task_orders.json file found in S3 Bucket, nothing happened."
             )
-    elif args.dataset == "dept_units" or args.dataset == "both":
+    if args.dataset == "dept_units" or args.dataset == "both":
         # Check if the file is in S3
         if "units.json" in file_list:
             get_dept_unit(aws_s3_client, socrata_client)
