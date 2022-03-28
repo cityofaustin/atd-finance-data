@@ -13,6 +13,8 @@ def pad_angle_brackets(value):
     This issue occurs when a task order name contains something like:
     "Blah Blah project on lots <50 acres". It happens. meh. 
     """
+    if not value:
+        return value
     return value.replace(">", " > ").replace("<", " < ")
 
 
