@@ -173,13 +173,16 @@ def coalesce_records(records_current, coalesce_fields, current_pk, separator = "
                 coal_record[field] = separator.join([coal_val, current_val])
             elif current_val:
                 coal_record[field] = current_val
-    return [val for key, val in index.items()]
+    return list(index.values())
 
 def main():
     args = cli_args()
     record_type = args.name
     app_name = args.dest
+    
     # get latest finance records from AWS S3
+    logging.info(f"Downloading {record_type} records from S3...")
+
     records_current_unfiltered = download_json(
         bucket_name=BUCKET, fname=f"{record_type}.json"
     )
@@ -194,9 +197,13 @@ def main():
     )
 
     # fetch the same type of records from knack
+    logging.info(f"Downloading {record_type} records from Knack...")
+
     app = knackpy.App(app_id=KNACK_APP_ID, api_key=KNACK_API_KEY)
     knack_obj = FIELD_MAPS[record_type]["knack_object"][app_name]
     records_knack = [dict(record) for record in app.get(knack_obj)]
+
+    logging.info(f"Transforming records...")
     field_map = FIELD_MAPS[record_type]["field_map"]
     
     current_pk, knack_pk = get_pks(field_map, app_name)
