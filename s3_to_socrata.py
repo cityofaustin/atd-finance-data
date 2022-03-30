@@ -7,6 +7,7 @@ from datetime import datetime, timezone, timedelta
 import json
 import logging
 import os
+import numpy as np
 
 import boto3
 import sodapy
@@ -88,6 +89,7 @@ def get_task_orders(client, socrata_client):
     df = pd.read_json(response.get("Body"), orient="records")
     # Transforms the file to fit the Socrata dataset
     data = transform_records(df)
+
     socrata_client.upsert(TASK_DATASET, data)
     logger.debug("Sent task data to Socrata")
 
@@ -107,6 +109,9 @@ def transform_records(df):
         Transformed file.
 
     """
+    # Replaces NaN float values to None which is needed for Socrata.
+    # Socrata doesn't recognize NaN as a value for number columns
+    df = df.replace({np.nan: None})
 
     df = df.rename(
         columns={
