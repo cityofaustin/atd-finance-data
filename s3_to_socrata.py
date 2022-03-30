@@ -7,8 +7,8 @@ from datetime import datetime, timezone, timedelta
 import json
 import logging
 import os
-import numpy as np
 
+import numpy as np
 import boto3
 import sodapy
 import pandas as pd
