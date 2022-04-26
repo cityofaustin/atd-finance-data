@@ -2,7 +2,5 @@
 # ready-made Oracle docker container: https://github.com/cityofaustin/atd-oracle-py
 arrow==0.17.*
 knackpy==1.0.*
-numpy==1.21.*
 sodapy==2.1.*
 boto3==1.19.*
-pandas==1.3.*
