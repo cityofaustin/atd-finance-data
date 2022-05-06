@@ -3,14 +3,12 @@
 Download finance json files and publish them to Socrata
 """
 import argparse
-from datetime import datetime, timezone, timedelta
 import json
 import logging
 import os
 
 import boto3
 import sodapy
-import pandas as pd
 
 import utils
 
@@ -63,7 +61,9 @@ def get_dept_unit(client, socrata_client):
 
     """
     response = client.get_object(Bucket=BUCKET_NAME, Key="units.json")
-    data = json.load(response.get("Body"))
+    obj_data = response.get("Body").read().decode()
+    data = json.loads(obj_data)
+
     socrata_client.upsert(DEPT_UNITS_DATASET, data)
     logger.debug("Sent units data to Socrata")
 
@@ -84,52 +84,55 @@ def get_task_orders(client, socrata_client):
 
     """
     response = client.get_object(Bucket=BUCKET_NAME, Key="task_orders.json")
+    obj_data = response.get("Body").read().decode()
+    data = json.loads(obj_data)
 
-    df = pd.read_json(response.get("Body"), orient="records")
     # Transforms the file to fit the Socrata dataset
-    data = transform_records(df)
+    data = transform_records(data)
+
     socrata_client.upsert(TASK_DATASET, data)
     logger.debug("Sent task data to Socrata")
 
 
-def transform_records(df):
+def transform_records(data):
     """
     Transforms the task_orders.json file to be in the same format as the socrata dataset
 
     Parameters
     ----------
-    df : Pandas Dataframe
-        Raw JSON file from S3.
+    data : dict
+        Json file from S3 bucket
 
     Returns
     -------
-    Dict
+    replaced_data : dict
         Transformed file.
 
     """
+    columns = {
+        "TASK_ORDER_DEPT": "DEPT",
+        "TASK_ORDER_ID": "TASK_ORDER",
+        "TASK_ORDER_DESC": "NAME",
+        "TASK_ORDER_STATUS": "Status",
+        "TASK_ORDER_TYPE": "TK_TYPE",
+        "TK_CURR_AMOUNT": "CURRENT_ESTIMATE",
+        "CHARGED_AMOUNT": "CHARGEDAMOUNT",
+        "TASK_ORDER_BAL": "BALANCE",
+        "BYR_FDU": "BUYER_FDUS",
+    }
 
-    df = df.rename(
-        columns={
-            "TASK_ORDER_DEPT": "DEPT",
-            "TASK_ORDER_ID": "TASK_ORDER",
-            "TASK_ORDER_DESC": "NAME",
-            "TASK_ORDER_STATUS": "Status",
-            "TASK_ORDER_TYPE": "TK_TYPE",
-            "TK_CURR_AMOUNT": "CURRENT_ESTIMATE",
-            "CHARGED_AMOUNT": "CHARGEDAMOUNT",
-            "TASK_ORDER_BAL": "BALANCE",
-            "BYR_FDU": "BUYER_FDUS",
-        }
-    )
+    replaced_data = []
+    for row in data:
+        new_row = {}
+        for src_key, dest_key in columns.items():
+            new_row[dest_key] = row.get(src_key)
+        new_row["DISPLAY_NAME"] = new_row["TASK_ORDER"] + " | " + new_row["NAME"]
+        replaced_data.append(new_row)
 
-    # Creating Display Name field
-    df["DISPLAY_NAME"] = df["TASK_ORDER"] + " | " + df["NAME"]
-
-    return df.to_dict("records")
+    return replaced_data
 
 
 def main(args):
-
     ## Setting up client objects
     aws_s3_client = boto3.client(
         "s3", aws_access_key_id=AWS_ACCESS_ID, aws_secret_access_key=AWS_PASS,
