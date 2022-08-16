@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Download finance json files and publish them to Socrata
+Download finance json files from s3 bucket and publish them to Socrata
+example usage: "python s3_to_socrata.py --dataset fdus"
 """
 import argparse
 import json
@@ -23,6 +24,7 @@ SO_PASS = os.getenv("SO_PASS")
 
 TASK_DATASET = os.getenv("TASK_DATASET")
 DEPT_UNITS_DATASET = os.getenv("DEPT_UNITS_DATASET")
+FDU_DATASET = os.getenv("FDU_DATASET")
 
 
 def get_socrata_client():
@@ -94,6 +96,28 @@ def get_task_orders(client, socrata_client):
     logger.debug("Sent task data to Socrata")
 
 
+def upsert_fdus(client, socrata_client):
+    """
+    Gets the fdus.json file and upserts data to socrata
+
+    Parameters
+    ----------
+    client : AWS Client object
+    socrata_client : Socrata client object
+
+    Returns
+    -------
+    None.
+
+    """
+    response = client.get_object(Bucket=BUCKET_NAME, Key="fdus.json")
+    obj_data = response.get("Body").read().decode()
+    data = json.loads(obj_data)
+
+    socrata_client.upsert(FDU_DATASET, data)
+    logger.debug("Sent fdu to Socrata")
+
+
 def transform_records(data):
     """
     Transforms the task_orders.json file to be in the same format as the socrata dataset
@@ -139,11 +163,11 @@ def main(args):
     )
     socrata_client = get_socrata_client()
 
-    # Get a list of the files in the the S3 Bucekt
+    # Get a list of the files in the S3 Bucket
     file_list = aws_list_files(aws_s3_client)
 
     # Argument logic for publishing data
-    if args.dataset == "task_orders" or args.dataset == "both":
+    if args.dataset == "task_orders" or args.dataset == "all":
         # Check if the file is in S3
         if "task_orders.json" in file_list:
             get_task_orders(aws_s3_client, socrata_client)
@@ -151,12 +175,19 @@ def main(args):
             logger.debug(
                 "No task_orders.json file found in S3 Bucket, nothing happened."
             )
-    if args.dataset == "dept_units" or args.dataset == "both":
+    if args.dataset == "dept_units" or args.dataset == "all":
         # Check if the file is in S3
         if "units.json" in file_list:
             get_dept_unit(aws_s3_client, socrata_client)
         else:
             logger.debug("No units.json file found in S3 Bucket, nothing happened.")
+
+    if args.dataset == "fdus" or args.dataset == "all":
+        # Check if the file is in S3
+        if "fdus.json" in file_list:
+            upsert_fdus(aws_s3_client, socrata_client)
+        else:
+            logger.debug("No fdus.json file found in S3 Bucket, nothing happened.")
     return
 
 
@@ -165,9 +196,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--dataset",
     type=str,
-    choices=["task_orders", "dept_units", "both"],
-    help=f"Which dataset to publish, defaults to both",
-    default="both",
+    choices=["task_orders", "dept_units", "fdus", "all"],
+    help=f"Which dataset to publish, defaults to all",
+    default="all",
 )
 
 parser.add_argument(
