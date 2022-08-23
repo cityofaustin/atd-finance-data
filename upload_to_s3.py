@@ -22,7 +22,7 @@ PORT = os.getenv("PORT")
 SERVICE = os.getenv("SERVICE")
 BUCKET = os.getenv("BUCKET")
 
-# we are explict about the fields we select not only because these views hold data we
+# we are explicit about the fields we select not only because these views hold data we
 # don't care about but also because any datetime fields would require extra handling in
 # order to JSON-serialize them
 QUERIES = {
@@ -30,6 +30,7 @@ QUERIES = {
     "units": "select DEPT_UNIT_ID, DEPT_ID, DEPT, UNIT, UNIT_LONG_NAME, UNIT_SHORT_NAME, DEPT_UNIT_STATUS from lu_dept_units WHERE DEPT in(2400,6207,2507)",
     "objects": "select OBJ_ID, OBJ_CLASS_ID, OBJ_CATEGORY_ID, OBJ_TYPE_ID, OBJ_GROUP_ID, OBJ_CODE, OBJ_LONG_NAME, OBJ_SHORT_NAME, OBJ_DESC, OBJ_REIMB_ELIG_STATUS, OBJ_STATUS, ACT_FL from lu_obj_cd",
     "master_agreements": "select DOC_CD, DOC_DEPT_CD, DOC_ID, DOC_DSCR, DOC_PHASE_CD, VEND_CUST_CD, LGL_NM from DEPT_2400_MA_VW",
+    "fdus": "select * from ATD_SUBPROJECT_FDU_VW",
 }
 
 

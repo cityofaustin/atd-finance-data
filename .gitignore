@@ -112,6 +112,7 @@ celerybeat.pid
 *.env
 .env
 .venv
+.idea
 env/
 venv/
 ENV/
