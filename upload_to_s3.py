@@ -22,11 +22,14 @@ PORT = os.getenv("PORT")
 SERVICE = os.getenv("SERVICE")
 BUCKET = os.getenv("BUCKET")
 
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+
 # we are explicit about the fields we select not only because these views hold data we
 # don't care about but also because any datetime fields would require extra handling in
 # order to JSON-serialize them
 QUERIES = {
-    "task_orders": "select atd_tk.TASK_ORDER_DEPT, atd_tk.TASK_ORDER_ID, atd_tk.TASK_ORDER_DESC, atd_tk.TASK_ORDER_STATUS, atd_tk.TASK_ORDER_TYPE, atd_tk.TK_CURR_AMOUNT, atd_tk.CHARGED_AMOUNT, atd_tk.TASK_ORDER_BAL, buyer_tk.BYR_FDU FROM DEPT_2400_TK_VW atd_tk LEFT JOIN( SELECT DISTINCT TASK_ORD_CD, BYR_FDU FROM REL_BUYER_SELLER_FDU_TK) buyer_tk ON atd_tk.TASK_ORDER_ID = buyer_tk.TASK_ORD_CD where TASK_ORDER_STATUS is not null",
+    "task_orders": "select atd_tk.TASK_ORDER_DEPT, atd_tk.TASK_ORDER_ID, atd_tk.TASK_ORDER_DESC, atd_tk.TASK_ORDER_STATUS, atd_tk.TASK_ORDER_TYPE, atd_tk.TK_CURR_AMOUNT, atd_tk.CHARGED_AMOUNT, atd_tk.TASK_ORDER_BAL, atd_tk.TASK_ORDER_ESTIMATOR, buyer_tk.BYR_FDU FROM DEPT_2400_TK_VW atd_tk LEFT JOIN( SELECT DISTINCT TASK_ORD_CD, BYR_FDU FROM REL_BUYER_SELLER_FDU_TK) buyer_tk ON atd_tk.TASK_ORDER_ID = buyer_tk.TASK_ORD_CD where TASK_ORDER_STATUS is not null",
     "units": "select DEPT_UNIT_ID, DEPT_ID, DEPT, UNIT, UNIT_LONG_NAME, UNIT_SHORT_NAME, DEPT_UNIT_STATUS from lu_dept_units WHERE DEPT in(2400,6207,2507)",
     "objects": "select OBJ_ID, OBJ_CLASS_ID, OBJ_CATEGORY_ID, OBJ_TYPE_ID, OBJ_GROUP_ID, OBJ_CODE, OBJ_LONG_NAME, OBJ_SHORT_NAME, OBJ_DESC, OBJ_REIMB_ELIG_STATUS, OBJ_STATUS, ACT_FL from lu_obj_cd",
     "master_agreements": "select DOC_CD, DOC_DEPT_CD, DOC_ID, DOC_DSCR, DOC_PHASE_CD, VEND_CUST_CD, LGL_NM from DEPT_2400_MA_VW",
@@ -40,6 +43,8 @@ def fileobj(list_of_dicts):
 
 
 def get_conn(host, port, service, user, password):
+    #lib_dir = r"/Users/charliehenry/instantclient_19_8"
+    #cx_Oracle.init_oracle_client(lib_dir)
     dsn_tns = cx_Oracle.makedsn(host, port, service_name=service)
     return cx_Oracle.connect(user=user, password=password, dsn=dsn_tns)
 
@@ -85,8 +90,8 @@ def main():
 
     file = fileobj(rows)
     file_name = f"{name}.json"
-    session = boto3.session.Session()
-    client = session.client("s3")
+    session = boto3.session.Session(aws_access_key_id=AWS_ACCESS_KEY_ID,aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    client = session.client("s3",aws_access_key_id=AWS_ACCESS_KEY_ID,aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
     client.upload_fileobj(
         file, BUCKET, file_name,
     )

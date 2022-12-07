@@ -45,39 +45,73 @@ of "app_name" name throughout these scripts as well as in atd-knack-services
 FIELD_MAPS = {
     "task_orders": {
         # any Knack app to be processed must have an object ID defined here
-        "knack_object": {"data-tracker": "object_86",},
+        "knack_object": {
+            "data-tracker": "object_86",
+            "finance-purchasing": "object_43",
+        },
         # see docstring about coalesce in s3_to_knack.py
         "coalesce_fields": ["BYR_FDU"],
         "field_map": [
-            {"src": "TASK_ORDER_DEPT", "data-tracker": "field_1276"},
-            {"src": "TASK_ORDER_ID", "data-tracker": "field_1277", "primary_key": True},
+            {
+                "src": "TASK_ORDER_DEPT", 
+                "data-tracker": "field_1276",
+                "finance-purchasing": "field_988",
+            },
+            {
+                "src": "TASK_ORDER_ID",
+                "data-tracker": "field_1277",
+                "finance-purchasing": "field_989",
+                "primary_key": True,
+            },
             {
                 "src": "TASK_ORDER_DESC",
                 "data-tracker": "field_2632",
+                "finance-purchasing": "field_990",
                 "handler": pad_angle_brackets,
             },
-            {"src": "TASK_ORDER_STATUS", "data-tracker": "field_3810",},
-            {"src": "TASK_ORDER_TYPE", "data-tracker": "field_3580"},
+            {
+                "src": "TASK_ORDER_STATUS", 
+                "data-tracker": "field_3810",
+                "finance-purchasing": "field_992",
+            },
+            {
+                "src": "TASK_ORDER_TYPE", 
+                "data-tracker": "field_3580",
+                "finance-purchasing": "field_994",
+            },
             {
                 "src": "TK_CURR_AMOUNT",
                 "data-tracker": "field_3684",
+                "finance-purchasing": "field_995",
                 "handler": add_comma_separator,
             },
             {
                 "src": "CHARGED_AMOUNT",
                 "data-tracker": "field_3685",
+                "finance-purchasing": "field_996",
                 "handler": add_comma_separator,
             },
             {
                 "src": "TASK_ORDER_BAL",
                 "data-tracker": "field_3686",
+                "finance-purchasing": "field_997",
                 "handler": add_comma_separator,
             },
-            {"src": "BYR_FDU", "data-tracker": "field_3807"},
+            {
+                "src": "TASK_ORDER_ESTIMATOR",
+                "data-tracker": "field_4495",
+                "finance-purchasing": "field_1048",
+            },
+            {
+                "src": "BYR_FDU",
+                "data-tracker": "field_3807",
+                "finance-purchasing": "field_998",
+            },
             {
                 # appends modified date
                 "src": None,
                 "data-tracker": "field_3809",
+                "finance-purchasing": "field_999",
                 "handler": knack_current_timestamp,
                 "ignore_diff": True,
             },

@@ -220,9 +220,13 @@ def main():
 
     logging.info(f"{len(todos)} records to process.")
 
+    count = 1
     for record in todos:
+        if count % 10 == 0:
+            logging.info(f"{count} record(s) processed")
         method = "create" if not record.get("id") else "update"
         app.record(data=record, method=method, obj=knack_obj)
+        count += 1
 
 
 if __name__ == "__main__":
