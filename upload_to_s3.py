@@ -43,8 +43,6 @@ def fileobj(list_of_dicts):
 
 
 def get_conn(host, port, service, user, password):
-    #lib_dir = r"/Users/charliehenry/instantclient_19_8"
-    #cx_Oracle.init_oracle_client(lib_dir)
     dsn_tns = cx_Oracle.makedsn(host, port, service_name=service)
     return cx_Oracle.connect(user=user, password=password, dsn=dsn_tns)
 
