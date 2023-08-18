@@ -1,6 +1,5 @@
 import arrow
 
-
 """ Handlers must accept and return single value """
 
 
@@ -53,7 +52,7 @@ FIELD_MAPS = {
         "coalesce_fields": ["BYR_FDU"],
         "field_map": [
             {
-                "src": "TASK_ORDER_DEPT", 
+                "src": "TASK_ORDER_DEPT",
                 "data-tracker": "field_1276",
                 "finance-purchasing": "field_988",
             },
@@ -70,12 +69,12 @@ FIELD_MAPS = {
                 "handler": pad_angle_brackets,
             },
             {
-                "src": "TASK_ORDER_STATUS", 
+                "src": "TASK_ORDER_STATUS",
                 "data-tracker": "field_3810",
                 "finance-purchasing": "field_992",
             },
             {
-                "src": "TASK_ORDER_TYPE", 
+                "src": "TASK_ORDER_TYPE",
                 "data-tracker": "field_3580",
                 "finance-purchasing": "field_994",
             },
@@ -159,6 +158,46 @@ FIELD_MAPS = {
                 "src": "DEPT_UNIT_STATUS",
                 "data-tracker": "field_3588",
                 "finance-purchasing": "field_488",
+            },
+        ],
+    },
+    "subprojects": {
+        "knack_object": {
+            "finance-purchasing": "object_45",
+        },
+        "field_map": [
+            {
+                "src": "PROJECT_NUMBER",
+                "finance-purchasing": "field_1011",  # PROJ ID
+            },
+            {
+                "src": "SP_NUMBER_TXT",
+                "finance-purchasing": "field_1012",  # ID
+                "primary_key": True,
+            },
+            {
+                "src": "SP_NAME",
+                "finance-purchasing": "field_985",  # Subproject Name
+            },
+            {
+                "src": "SP_DESCRIPTION",
+                "finance-purchasing": "field_1013",  # Subproject Description
+            },
+            {
+                "src": "SP_DETAILED_SCOPE",
+                "finance-purchasing": "field_1014",  # Detail Scope
+            },
+            {
+                "src": "SUB_PROJECT_MANAGER",
+                "finance-purchasing": "field_1015",  # Subproject Manager
+            },
+            {
+                "src": "SUB_PROJECT_MANAGING_DEPT",
+                "finance-purchasing": "field_1016",  # Dept
+            },
+            {
+                "src": "SP_STATUS",
+                "finance-purchasing": "field_1017"  # Status
             },
         ],
     },
