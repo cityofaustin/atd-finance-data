@@ -13,9 +13,9 @@ import sodapy
 
 import utils
 
-AWS_ACCESS_ID = os.getenv("AWS_ACCESS_ID")
-AWS_PASS = os.getenv("AWS_PASS")
-BUCKET_NAME = os.getenv("BUCKET_NAME")
+AWS_ACCESS_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_PASS = os.getenv("AWS_SECRET_ACCESS_KEY")
+BUCKET_NAME = os.getenv("BUCKET")
 
 SO_WEB = os.getenv("SO_WEB")
 SO_TOKEN = os.getenv("SO_TOKEN")
@@ -67,7 +67,7 @@ def get_dept_unit(client, socrata_client):
     data = json.loads(obj_data)
 
     socrata_client.upsert(DEPT_UNITS_DATASET, data)
-    logger.debug("Sent units data to Socrata")
+    logger.info("Sent units data to Socrata")
 
 
 def get_task_orders(client, socrata_client):
@@ -90,10 +90,10 @@ def get_task_orders(client, socrata_client):
     data = json.loads(obj_data)
 
     # Transforms the file to fit the Socrata dataset
-    data = transform_records(data)
+    data = transform_tks(data)
 
     socrata_client.upsert(TASK_DATASET, data)
-    logger.debug("Sent task data to Socrata")
+    logger.info("Sent task data to Socrata")
 
 
 def upsert_fdus(client, socrata_client):
@@ -115,10 +115,10 @@ def upsert_fdus(client, socrata_client):
     data = json.loads(obj_data)
 
     socrata_client.upsert(FDU_DATASET, data)
-    logger.debug("Sent fdu to Socrata")
+    logger.info("Sent fdu to Socrata")
 
 
-def transform_records(data):
+def transform_tks(data):
     """
     Transforms the task_orders.json file to be in the same format as the socrata dataset
 
@@ -157,7 +157,7 @@ def transform_records(data):
 
 
 def main(args):
-    ## Setting up client objects
+    # Setting up client objects
     aws_s3_client = boto3.client(
         "s3", aws_access_key_id=AWS_ACCESS_ID, aws_secret_access_key=AWS_PASS,
     )
@@ -172,7 +172,7 @@ def main(args):
         if "task_orders.json" in file_list:
             get_task_orders(aws_s3_client, socrata_client)
         else:
-            logger.debug(
+            logger.info(
                 "No task_orders.json file found in S3 Bucket, nothing happened."
             )
     if args.dataset == "dept_units" or args.dataset == "all":
@@ -180,35 +180,36 @@ def main(args):
         if "units.json" in file_list:
             get_dept_unit(aws_s3_client, socrata_client)
         else:
-            logger.debug("No units.json file found in S3 Bucket, nothing happened.")
+            logger.info("No units.json file found in S3 Bucket, nothing happened.")
 
     if args.dataset == "fdus" or args.dataset == "all":
         # Check if the file is in S3
         if "fdus.json" in file_list:
             upsert_fdus(aws_s3_client, socrata_client)
         else:
-            logger.debug("No fdus.json file found in S3 Bucket, nothing happened.")
+            logger.info("No fdus.json file found in S3 Bucket, nothing happened.")
     return
 
 
-parser = argparse.ArgumentParser()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
 
-parser.add_argument(
-    "--dataset",
-    type=str,
-    choices=["task_orders", "dept_units", "fdus", "all"],
-    help=f"Which dataset to publish, defaults to all",
-    default="all",
-)
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        choices=["task_orders", "dept_units", "fdus", "all"],
+        help=f"Which dataset to publish, defaults to all",
+        default="all",
+    )
 
-parser.add_argument(
-    "-v", "--verbose", action="store_true", help=f"Sets logger to DEBUG level",
-)
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help=f"Sets logger to DEBUG level",
+    )
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-logger = utils.get_logger(
-    __name__, level=logging.DEBUG if args.verbose else logging.INFO,
-)
+    logger = utils.get_logger(
+        __name__, level=logging.DEBUG if args.verbose else logging.INFO,
+    )
 
-main(args)
+    main(args)
