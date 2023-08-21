@@ -25,6 +25,7 @@ SO_PASS = os.getenv("SO_PASS")
 TASK_DATASET = os.getenv("TASK_DATASET")
 DEPT_UNITS_DATASET = os.getenv("DEPT_UNITS_DATASET")
 FDU_DATASET = os.getenv("FDU_DATASET")
+SUBPROJECTS_DATASET = os.getenv("SUBPROJECTS_DATASET")
 
 
 def get_socrata_client():
@@ -38,7 +39,7 @@ def aws_list_files(client):
     Returns a list of files in an S3 bucket.
     :return: object
     """
-    response = client.list_objects(Bucket=BUCKET_NAME,)
+    response = client.list_objects(Bucket=BUCKET_NAME, )
 
     file_list = []
     for content in response.get("Contents", []):
@@ -66,8 +67,9 @@ def get_dept_unit(client, socrata_client):
     obj_data = response.get("Body").read().decode()
     data = json.loads(obj_data)
 
-    socrata_client.upsert(DEPT_UNITS_DATASET, data)
+    res = socrata_client.upsert(DEPT_UNITS_DATASET, data)
     logger.info("Sent units data to Socrata")
+    logger.info(res)
 
 
 def get_task_orders(client, socrata_client):
@@ -92,8 +94,9 @@ def get_task_orders(client, socrata_client):
     # Transforms the file to fit the Socrata dataset
     data = transform_tks(data)
 
-    socrata_client.upsert(TASK_DATASET, data)
+    res = socrata_client.upsert(TASK_DATASET, data)
     logger.info("Sent task data to Socrata")
+    logger.info(res)
 
 
 def upsert_fdus(client, socrata_client):
@@ -114,8 +117,9 @@ def upsert_fdus(client, socrata_client):
     obj_data = response.get("Body").read().decode()
     data = json.loads(obj_data)
 
-    socrata_client.upsert(FDU_DATASET, data)
+    res = socrata_client.upsert(FDU_DATASET, data)
     logger.info("Sent fdu to Socrata")
+    logger.info(res)
 
 
 def transform_tks(data):
@@ -156,6 +160,50 @@ def transform_tks(data):
     return replaced_data
 
 
+def get_subprojects(client, socrata_client):
+    """
+    Gets the subprojects.json file and sends the data to socrata
+
+    Parameters
+    ----------
+    client : AWS Client object
+
+    socrata_client : Socrata client object
+
+    Returns
+    -------
+    None.
+
+    """
+    response = client.get_object(Bucket=BUCKET_NAME, Key="subprojects.json")
+    obj_data = response.get("Body").read().decode()
+    data = json.loads(obj_data)
+    data = remove_forbidden_keys(data, ["SUB_PROJECT_LAST_UPDATE_BY", "SUB_PROJECT_MANAGER"])
+
+    res = socrata_client.upsert(SUBPROJECTS_DATASET, data)
+    logger.info("Sent subprojects data to Socrata")
+    logger.info(res)
+
+
+def remove_forbidden_keys(data, forbidden_keys):
+    """Remove forbidden keys from data that are not needed in Socrata
+
+    Args:
+        data (list): A list of dictionaries, representing our data
+        forbidden_keys (list): List of the names of keys to remove from our data.
+
+    Returns:
+        list: A list of dictionaries, with forbidden keys removed
+
+    """
+
+    new_data = []
+    for row in data:
+        new_row = {k: v for k, v in row.items() if k.upper() not in forbidden_keys}
+        new_data.append(new_row)
+    return new_data
+
+
 def main(args):
     # Setting up client objects
     aws_s3_client = boto3.client(
@@ -188,6 +236,13 @@ def main(args):
             upsert_fdus(aws_s3_client, socrata_client)
         else:
             logger.info("No fdus.json file found in S3 Bucket, nothing happened.")
+
+    if args.dataset == "subprojects" or args.dataset == "all":
+        # Check if the file is in S3
+        if "subprojects.json" in file_list:
+            get_subprojects(aws_s3_client, socrata_client)
+        else:
+            logger.info("No subprojects.json file found in S3 Bucket, nothing happened.")
     return
 
 
@@ -197,7 +252,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset",
         type=str,
-        choices=["task_orders", "dept_units", "fdus", "all"],
+        choices=["task_orders", "dept_units", "fdus", "subprojects", "all"],
         help=f"Which dataset to publish, defaults to all",
         default="all",
     )
