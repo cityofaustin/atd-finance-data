@@ -34,6 +34,15 @@ def knack_current_timestamp(val, tz="US/Central"):
     ISO datestring in local time without the timezone offset, or a "local" timestamp"""
     return arrow.now(tz).format("YYYY-MM-DDTHH:mm:ss")
 
+def string_list_order(value):
+    """Input list stored as string is sorted into a consistent order"""
+    if isinstance(value, str):
+        unique_sorted = list(value.split(",\n"))
+        unique_sorted.sort()
+        return ",\n".join(unique_sorted)
+    else:
+        return None
+
 
 """
 Each top level key must be a financial record type. you probably dont want to mess w/
@@ -105,6 +114,7 @@ FIELD_MAPS = {
                 "src": "BYR_FDU",
                 "data-tracker": "field_3807",
                 "finance-purchasing": "field_998",
+                "handler": string_list_order,
             },
             {
                 # appends modified date

@@ -68,17 +68,8 @@ def get_pks(fields, app_name):
 
 
 def is_equal(rec_current, rec_knack, keys):
-    for key in keys:
-        # Comparing comma separated lists regardless of order
-        if isinstance(rec_current[key], str) and isinstance(rec_knack[key], str):
-            if ",\n" in rec_current[key] and ",\n" in rec_knack[key]:
-                if set(rec_current[key].split(",\n")) != set(rec_knack[key].split(",\n")):
-                    return False
-            elif rec_current[key] != rec_knack[key]:
-                return False
-        elif rec_current[key] != rec_knack[key]:
-            return False
-    return True
+    tests = [rec_current[key] == rec_knack[key] for key in keys]
+    return all(tests)
 
 
 def create_mapped_record(rec_current, field_map, app_name):
