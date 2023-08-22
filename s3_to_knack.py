@@ -68,8 +68,17 @@ def get_pks(fields, app_name):
 
 
 def is_equal(rec_current, rec_knack, keys):
-    tests = [rec_current[key] == rec_knack[key] for key in keys]
-    return all(tests)
+    for key in keys:
+        # Comparing comma separated lists regardless of order
+        if isinstance(rec_current[key], str) and isinstance(rec_knack[key], str):
+            if ",\n" in rec_current[key] and ",\n" in rec_knack[key]:
+                if set(rec_current[key].split(",\n")) != set(rec_knack[key].split(",\n")):
+                    return False
+            elif rec_current[key] != rec_knack[key]:
+                return False
+        elif rec_current[key] != rec_knack[key]:
+            return False
+    return True
 
 
 def create_mapped_record(rec_current, field_map, app_name):
@@ -180,7 +189,7 @@ def main():
     record_type = args.name
     app_name = args.dest
     
-    # get latest finance records from AWS S3
+    # get the latest finance records from AWS S3
     logging.info(f"Downloading {record_type} records from S3...")
 
     records_current_unfiltered = download_json(
