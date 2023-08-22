@@ -180,7 +180,7 @@ def get_subprojects(client, socrata_client):
     data = json.loads(obj_data)
     data = remove_forbidden_keys(data, ["SUB_PROJECT_LAST_UPDATE_BY", "SUB_PROJECT_MANAGER"])
 
-    res = socrata_client.upsert(SUBPROJECTS_DATASET, data)
+    res = socrata_client.replace(SUBPROJECTS_DATASET, data)
     logger.info("Sent subprojects data to Socrata")
     logger.info(res)
 
