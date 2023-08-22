@@ -180,7 +180,7 @@ def main():
     record_type = args.name
     app_name = args.dest
     
-    # get latest finance records from AWS S3
+    # get the latest finance records from AWS S3
     logging.info(f"Downloading {record_type} records from S3...")
 
     records_current_unfiltered = download_json(
