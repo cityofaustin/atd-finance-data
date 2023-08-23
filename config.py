@@ -43,6 +43,9 @@ def string_list_order(value):
     else:
         return None
 
+def stringify_value(value):
+    """Changes a given value to be stored as a string"""
+    return str(value)
 
 """
 Each top level key must be a financial record type. you probably dont want to mess w/
@@ -184,6 +187,7 @@ FIELD_MAPS = {
                 "src": "SP_NUMBER_TXT",
                 "finance-purchasing": "field_1012",  # ID
                 "primary_key": True,
+                "handler": stringify_value,
             },
             {
                 "src": "SP_NAME",
