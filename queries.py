@@ -40,7 +40,7 @@ QUERIES = {
     FROM
         lu_dept_units
     WHERE
-        DEPT in(2400, 6207, 2507)
+        DEPT in(2400, 2507, 6200, 6207)
 	""",
     "objects": """
     SELECT
