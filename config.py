@@ -16,11 +16,6 @@ def pad_angle_brackets(value):
         return value
     return value.replace(">", " > ").replace("<", " < ")
 
-
-def is_dept_2400(record):
-    return record["DEPT"] == "2400"
-
-
 def add_comma_separator(value):
     """You may be surprised to learn that knack stores raw "curreny" field values as
     strings with commas/thousands-separators. The "$" is omitted."""
@@ -130,7 +125,6 @@ FIELD_MAPS = {
         ],
     },
     "units": {
-        "src_data_filter": {"finance-purchasing": is_dept_2400},
         "knack_object": {
             "data-tracker": "object_189",
             "finance-purchasing": "object_7",
