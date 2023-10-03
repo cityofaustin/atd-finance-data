@@ -209,4 +209,21 @@ FIELD_MAPS = {
             },
         ],
     },
+    "objects": {
+        "knack_object": {
+            "finance-purchasing": "object_6",
+        },
+        "field_map": [
+            {
+                "src": "OBJ_CODE",
+                "finance-purchasing": "field_76",  # Code
+                "primary_key": True,
+                "handler": stringify_value,
+            },
+            {
+                "src": "OBJ_LONG_NAME",
+                "finance-purchasing": "field_75",  # Name
+            },
+        ],
+    },
 }
