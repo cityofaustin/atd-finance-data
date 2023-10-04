@@ -209,4 +209,53 @@ FIELD_MAPS = {
             },
         ],
     },
+    "objects": {
+        "knack_object": {
+            "finance-purchasing": "object_6",
+        },
+        "field_map": [
+            {
+                "src": "OBJ_CODE",
+                "finance-purchasing": "field_76",  # Code
+                "primary_key": True,
+                "handler": stringify_value,
+            },
+            {
+                "src": "OBJ_LONG_NAME",
+                "finance-purchasing": "field_75",  # Name
+            },
+        ],
+    },
+    "master_agreements": {
+        "knack_object": {
+            "finance-purchasing": "object_13",
+        },
+        "field_map": [
+            {
+                "src": "DOC_CD",
+                "finance-purchasing": "field_221",  # DCD
+            },
+            {
+                "src": "DOC_DEPT_CD",
+                "finance-purchasing": "field_222",  # DDEP
+            },
+            {
+                "src": "DOC_ID",
+                "finance-purchasing": "field_223",  # DOCUMENT ID
+                "primary_key": True,
+            },
+            {
+                "src": "DOC_DSCR",
+                "finance-purchasing": "field_224",  # DOCUMENT DESCRIPTION
+            },
+            {
+                "src": "VEND_CUST_CD",
+                "finance-purchasing": "field_247",  # VENDOR CODE
+            },
+            {
+                "src": "LGL_NM",
+                "finance-purchasing": "field_248",  # VENDOR NAME
+            },
+        ],
+    },
 }
