@@ -30,7 +30,11 @@ SUBPROJECTS_DATASET = os.getenv("SUBPROJECTS_DATASET")
 
 def get_socrata_client():
     return sodapy.Socrata(
-        SO_WEB, SO_TOKEN, username=SO_USER, password=SO_PASS, timeout=60,
+        SO_WEB,
+        SO_TOKEN,
+        username=SO_USER,
+        password=SO_PASS,
+        timeout=60,
     )
 
 
@@ -39,7 +43,9 @@ def aws_list_files(client):
     Returns a list of files in an S3 bucket.
     :return: object
     """
-    response = client.list_objects(Bucket=BUCKET_NAME, )
+    response = client.list_objects(
+        Bucket=BUCKET_NAME,
+    )
 
     file_list = []
     for content in response.get("Contents", []):
@@ -50,12 +56,12 @@ def aws_list_files(client):
 
 def get_dept_unit(client, socrata_client):
     """
-    Gets the units.json file and sends the data to socrata 
+    Gets the units.json file and sends the data to socrata
 
     Parameters
     ----------
     client : AWS Client object
-    
+
     socrata_client : Socrata client object
 
     Returns
@@ -74,12 +80,12 @@ def get_dept_unit(client, socrata_client):
 
 def get_task_orders(client, socrata_client):
     """
-    Gets the task_orders.json file and sends the data to socrata 
+    Gets the task_orders.json file and sends the data to socrata
 
     Parameters
     ----------
     client : AWS Client object
-        
+
     socrata_client : Socrata client object
 
     Returns
@@ -178,9 +184,15 @@ def get_subprojects(client, socrata_client):
     response = client.get_object(Bucket=BUCKET_NAME, Key="subprojects.json")
     obj_data = response.get("Body").read().decode()
     data = json.loads(obj_data)
-    data = remove_forbidden_keys(data, ["SUB_PROJECT_LAST_UPDATE_BY", "SUB_PROJECT_MANAGER"])
+    data = remove_forbidden_keys(
+        data, forbidden_keys=["SUB_PROJECT_LAST_UPDATE_BY", "SUB_PROJECT_MANAGER"]
+    )
+    data = remove_dupe_rows(
+        data,
+        primary_key="SP_NUMBER_TXT",
+    )
 
-    res = socrata_client.replace(SUBPROJECTS_DATASET, data)
+    res = socrata_client.upsert(SUBPROJECTS_DATASET, data)
     logger.info("Sent subprojects data to Socrata")
     logger.info(res)
 
@@ -204,10 +216,34 @@ def remove_forbidden_keys(data, forbidden_keys):
     return new_data
 
 
+def remove_dupe_rows(data, primary_key):
+    """removes duplicate rows which are sometimes returned from the views created for us
+
+    Args:
+        primary_key (str): the ID field that we are checking for dupes
+        data (list): A list of dictionaries, representing our data
+
+
+    Returns:
+        list: A list of dictionaries, with dupe rows removed
+
+    """
+
+    ids = []
+    new_data = []
+    for row in data:
+        if row[primary_key] not in ids:
+            ids.append(row[primary_key])
+            new_data.append(row)
+    return new_data
+
+
 def main(args):
     # Setting up client objects
     aws_s3_client = boto3.client(
-        "s3", aws_access_key_id=AWS_ACCESS_ID, aws_secret_access_key=AWS_PASS,
+        "s3",
+        aws_access_key_id=AWS_ACCESS_ID,
+        aws_secret_access_key=AWS_PASS,
     )
     socrata_client = get_socrata_client()
 
@@ -242,7 +278,9 @@ def main(args):
         if "subprojects.json" in file_list:
             get_subprojects(aws_s3_client, socrata_client)
         else:
-            logger.info("No subprojects.json file found in S3 Bucket, nothing happened.")
+            logger.info(
+                "No subprojects.json file found in S3 Bucket, nothing happened."
+            )
     return
 
 
@@ -258,13 +296,17 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help=f"Sets logger to DEBUG level",
+        "-v",
+        "--verbose",
+        action="store_true",
+        help=f"Sets logger to DEBUG level",
     )
 
     args = parser.parse_args()
 
     logger = utils.get_logger(
-        __name__, level=logging.DEBUG if args.verbose else logging.INFO,
+        __name__,
+        level=logging.DEBUG if args.verbose else logging.INFO,
     )
 
     main(args)
