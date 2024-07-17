@@ -10,6 +10,7 @@ QUERIES = {
     SELECT
         atd_tk.TASK_ORDER_DEPT,
         atd_tk.TASK_ORDER_ID,
+        atd_tk.TASK_ORDER_DEPT || atd_tk.TASK_ORDER_ID as DEPT_TK_ID,
         atd_tk.TASK_ORDER_DESC,
         atd_tk.TASK_ORDER_STATUS,
         atd_tk.TASK_ORDER_TYPE,

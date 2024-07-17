@@ -4,13 +4,13 @@ import arrow
 
 
 def pad_angle_brackets(value):
-    """ As it turns out, knack will remove (or at least hide or ignore?) text from a
-    text field if it contains an unclosed left angle bracket (<) immediately followed 
+    """As it turns out, knack will remove (or at least hide or ignore?) text from a
+    text field if it contains an unclosed left angle bracket (<) immediately followed
     by a alphanum character. Not clear how right angle brackes are hanled, so let's
     just apply spacing to either of them.
 
     This issue occurs when a task order name contains something like:
-    "Blah Blah project on lots <50 acres". It happens. meh. 
+    "Blah Blah project on lots <50 acres". It happens. meh.
     """
     if not value:
         return value
@@ -25,7 +25,7 @@ def add_comma_separator(value):
 
 
 def knack_current_timestamp(val, tz="US/Central"):
-    """Input val is ignored here as we generate a new value. Note that Knack needs an 
+    """Input val is ignored here as we generate a new value. Note that Knack needs an
     ISO datestring in local time without the timezone offset, or a "local" timestamp"""
     return arrow.now(tz).format("YYYY-MM-DDTHH:mm:ss")
 
@@ -67,6 +67,11 @@ FIELD_MAPS = {
                 "src": "TASK_ORDER_ID",
                 "data-tracker": "field_1277",
                 "finance-purchasing": "field_989",
+            },
+            {
+                "src": "DEPT_TK_ID",
+                "data-tracker": "field_4765",
+                "finance-purchasing": None,
                 "primary_key": True,
             },
             {
@@ -203,10 +208,7 @@ FIELD_MAPS = {
                 "src": "SUB_PROJECT_MANAGING_DEPT",
                 "finance-purchasing": "field_1016",  # Dept
             },
-            {
-                "src": "SP_STATUS",
-                "finance-purchasing": "field_1017"  # Status
-            },
+            {"src": "SP_STATUS", "finance-purchasing": "field_1017"},  # Status
         ],
     },
     "objects": {
