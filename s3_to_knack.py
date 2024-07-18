@@ -3,6 +3,7 @@
 # python s3_to_knack.py task_orders data-tracker
 """ Download financial data from AWS S3 and upsert to a Knack app"""
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import logging
 import os
@@ -181,6 +182,13 @@ def coalesce_records(records_current, coalesce_fields, current_pk, separator=",\
     return list(index.values())
 
 
+def process_record(record, knack_obj, app, count):
+    method = "create" if not record.get("id") else "update"
+    app.record(data=record, method=method, obj=knack_obj)
+    if count % 10 == 0:
+        logging.info(f"{count} records processed so far...")
+
+
 def main():
     args = cli_args()
     record_type = args.name
@@ -225,13 +233,18 @@ def main():
 
     logging.info(f"{len(todos)} records to process.")
 
-    count = 1
-    for record in todos:
-        if count % 10 == 0:
-            logging.info(f"{count} record(s) processed")
-        method = "create" if not record.get("id") else "update"
-        app.record(data=record, method=method, obj=knack_obj)
-        count += 1
+    # Process todos with 10 workers
+    count = 0
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = []
+        for record in todos:
+            futures.append(
+                executor.submit(process_record, record, knack_obj, app, count)
+            )
+            count += 1
+
+    for future in futures:
+        future.result()  # This will re-raise any exceptions encountered in the threads
 
 
 if __name__ == "__main__":

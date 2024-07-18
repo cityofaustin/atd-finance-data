@@ -16,6 +16,7 @@ def pad_angle_brackets(value):
         return value
     return value.replace(">", " > ").replace("<", " < ")
 
+
 def add_comma_separator(value):
     """You may be surprised to learn that knack stores raw "curreny" field values as
     strings with commas/thousands-separators. The "$" is omitted."""
@@ -29,6 +30,7 @@ def knack_current_timestamp(val, tz="US/Central"):
     ISO datestring in local time without the timezone offset, or a "local" timestamp"""
     return arrow.now(tz).format("YYYY-MM-DDTHH:mm:ss")
 
+
 def string_list_order(value):
     """Input list stored as string is sorted into a consistent order"""
     if isinstance(value, str):
@@ -38,9 +40,11 @@ def string_list_order(value):
     else:
         return None
 
+
 def stringify_value(value):
     """Changes a given value to be stored as a string"""
     return str(value)
+
 
 """
 Each top level key must be a financial record type. you probably dont want to mess w/
@@ -70,8 +74,8 @@ FIELD_MAPS = {
             },
             {
                 "src": "DEPT_TK_ID",
-                "data-tracker": "field_4765",
-                "finance-purchasing": None,
+                "data-tracker": "field_4837",
+                "finance-purchasing": "field_1113",
                 "primary_key": True,
             },
             {
