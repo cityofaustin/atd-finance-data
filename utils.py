@@ -1,6 +1,7 @@
 import logging
 import sys
 
+
 def get_logger(name, level):
     """Return a module logger that streams to stdout"""
     logger = logging.getLogger(name)

@@ -13,7 +13,7 @@ import os
 import sys
 
 import boto3
-import cx_Oracle
+import oracledb as cx_Oracle
 
 from queries import QUERIES
 
@@ -29,7 +29,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 
 def fileobj(list_of_dicts):
-    """ convert a list of dictionaries to a json file-like object """
+    """convert a list of dictionaries to a json file-like object"""
     return io.BytesIO(json.dumps(list_of_dicts).encode())
 
 
@@ -37,8 +37,8 @@ def get_conn(host, port, service, user, password):
     # Need to run this once if you want to work locally
     # Change lib_dir to your cx_Oracle library location
     # https://stackoverflow.com/questions/56119490/cx-oracle-error-dpi-1047-cannot-locate-a-64-bit-oracle-client-library
-    # lib_dir = r"/Users/charliehenry/instantclient_19_8"
-    # cx_Oracle.init_oracle_client(lib_dir=lib_dir)
+    # lib_dir = r"/Users/charliehenry/instantclient_23_3"
+    cx_Oracle.init_oracle_client()
     dsn_tns = cx_Oracle.makedsn(host, port, service_name=service)
     return cx_Oracle.connect(user=user, password=password, dsn=dsn_tns)
 
@@ -93,7 +93,9 @@ def main():
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
     client.upload_fileobj(
-        file, BUCKET, file_name,
+        file,
+        BUCKET,
+        file_name,
     )
     logging.info(f"{len(rows)} records processed.")
 
@@ -101,4 +103,3 @@ def main():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     main()
-
