@@ -122,12 +122,7 @@ QUERIES = {
         FAO_ID,
         SP_NUMBER,
         SP_NAME,
-        SP_STATUS,
-        APP,
-        ENC,
-        EXP,
-        OBL,
-        FDU_BAL
+        SP_STATUS
     FROM
         MSTR_IA_DEV.ATD_FDUS_VW
     """,
