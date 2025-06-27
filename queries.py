@@ -93,7 +93,7 @@ QUERIES = {
         ATD_SUBPROJECT_FDU_VW
 	""",
     "subprojects": """
-        SELECT
+    SELECT
         PROJECT_NUMBER,
         SP_NUMBER_TXT,
         SP_NAME,
@@ -105,4 +105,26 @@ QUERIES = {
     FROM
         MSTR_IA_DEV.DEPT_2400_SUBPRJ_VW
 	""",
+    "fdu_expenses_obligated": """
+    SELECT 
+        FDU,
+        FDU_STATUS,
+        FUND,
+        FUND_LONG_NAME,
+        DEPT,
+        DEPT_LONG_NAME,
+        LVL1_DIV_CODE,
+        LVL1_DIV_LONG_NAME,
+        LVL2_GP_CODE,
+        LVL2_GP_LONG_NAME,
+        UNIT,
+        UNIT_LONG_NAME,
+        FAO_ID,
+        SP_NUMBER,
+        SP_NAME,
+        SP_STATUS,
+        'https://ecapris.austintexas.gov/index.cfm?fuseaction=fdus.fduData&fdu_ID=' || FAO_ID as ecapris_link
+    FROM
+        MSTR_IA_DEV.ATD_FDUS_VW
+    """,
 }
