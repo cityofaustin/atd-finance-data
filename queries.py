@@ -123,7 +123,12 @@ QUERIES = {
         SP_NUMBER,
         SP_NAME,
         SP_STATUS,
-        'https://ecapris.austintexas.gov/index.cfm?fuseaction=fdus.fduData&fdu_ID=' || FAO_ID as ecapris_link
+        'https://ecapris.austintexas.gov/index.cfm?fuseaction=fdus.fduData&fdu_ID=' || FAO_ID as ecapris_link,
+        APP,
+        EXP,
+        OBL,
+        ENC,
+        FDU_BAL
     FROM
         MSTR_IA_DEV.ATD_FDUS_VW
     """,
