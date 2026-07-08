@@ -18,6 +18,8 @@ QUERIES = {
         atd_tk.CHARGED_AMOUNT,
         atd_tk.TASK_ORDER_BAL,
         atd_tk.TASK_ORDER_ESTIMATOR,
+        atd_tk.LN_AMOUNT,
+        atd_tk.TASK_ORDER_REM_AMT,
         buyer_tk.BYR_FDU
     FROM
         DEPT_2400_TK_VW atd_tk

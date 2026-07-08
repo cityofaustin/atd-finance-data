@@ -113,6 +113,18 @@ FIELD_MAPS = {
                 "handler": add_comma_separator,
             },
             {
+                "src": "LN_AMOUNT",
+                "data-tracker": "field_5365",
+                "finance-purchasing": "field_1350",
+                "handler": add_comma_separator,
+            },
+            {
+                "src": "TASK_ORDER_REM_AMT",
+                "data-tracker": "field_5366",
+                "finance-purchasing": "field_1351",
+                "handler": add_comma_separator,
+            },
+            {
                 "src": "TASK_ORDER_ESTIMATOR",
                 "data-tracker": "field_4495",
                 "finance-purchasing": "field_1048",
