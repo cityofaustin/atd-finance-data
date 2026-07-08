@@ -1,0 +1,27 @@
+# AWS S3 (1pass: atd-finance-data)
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+BUCKET=
+
+# Knack API (depends on which Knack app you want to update.)
+KNACK_API_KEY=
+KNACK_APP_ID=
+
+# TPW Finance Oracle DB (1pass: atd-finance-data)
+HOST=
+PASSWORD=
+PORT=
+SERVICE=
+USER=
+
+# 1pass: Socrata Key ID, Secret, and Token
+SO_USER=<apiKeyId>
+SO_PASS=<apiKeySecret>
+SO_TOKEN=<appToken>
+SO_WEB=datahub.austintexas.gov
+
+# Socrata Dataset Resource IDs
+TASK_DATASET=ggav-ufvc
+FDU_DATASET=jega-nqf6
+DEPT_UNITS_DATASET=bgrt-2m2z
+SUBPROJECTS_DATASET=x454-x7cu
