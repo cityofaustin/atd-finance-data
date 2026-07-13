@@ -1,3 +1,13 @@
-env_file
-.git
-*.env
+# Ignores everything
+*
+
+# Only allows the following files:
+!config.py
+!fdu_program_tagging.py
+!prefix_maps.py
+!queries.py
+!s3_to_knack.py
+!s3_to_socrata.py
+!upload_to_s3.py
+!utils.py
+!requirements.txt

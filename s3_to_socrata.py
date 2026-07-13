@@ -153,6 +153,8 @@ def transform_tks(data):
         "CHARGED_AMOUNT": "CHARGEDAMOUNT",
         "TASK_ORDER_BAL": "BALANCE",
         "BYR_FDU": "BUYER_FDUS",
+        "LN_AMOUNT": "LN_AMOUNT",
+        "TASK_ORDER_REM_AMT": "TASK_ORDER_REM_AMT",
     }
 
     replaced_data = []

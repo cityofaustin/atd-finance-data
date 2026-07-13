@@ -3,3 +3,4 @@ knackpy==1.0.*
 sodapy==2.1.*
 boto3==1.19.*
 oracledb==2.1.*
+tqdm==4.67.*

@@ -11,6 +11,7 @@ import sys
 
 import boto3
 import knackpy
+from tqdm import tqdm
 
 from config import FIELD_MAPS
 
@@ -34,6 +35,17 @@ def cli_args():
         type=str,
         choices=["data-tracker", "finance-purchasing"],
         help="The name of the destination Knack app",
+    )
+    parser.add_argument(
+        "--progress-bar",
+        "-p",
+        action="store_true",
+        help=(
+            "Display a tqdm progress bar instead of the default periodic log "
+            "messages. Not recommended when running under Airflow, since the "
+            "bar's carriage-return redraws don't render cleanly in Airflow's "
+            "log viewer."
+        ),
     )
     return parser.parse_args()
 
@@ -182,10 +194,10 @@ def coalesce_records(records_current, coalesce_fields, current_pk, separator=",\
     return list(index.values())
 
 
-def process_record(record, knack_obj, app, count):
+def process_record(record, knack_obj, app, count=None):
     method = "create" if not record.get("id") else "update"
     app.record(data=record, method=method, obj=knack_obj)
-    if count % 10 == 0:
+    if count is not None and count % 10 == 0:
         logging.info(f"{count} records processed so far...")
 
 
@@ -234,17 +246,31 @@ def main():
     logging.info(f"{len(todos)} records to process.")
 
     # Process todos with 10 workers
-    count = 0
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = []
-        for record in todos:
-            futures.append(
-                executor.submit(process_record, record, knack_obj, app, count)
-            )
-            count += 1
+        if args.progress_bar:
+            # tqdm progress bar (best for interactive/terminal use; the
+            # carriage-return redraws don't render cleanly in Airflow logs)
+            futures = [
+                executor.submit(process_record, record, knack_obj, app)
+                for record in todos
+            ]
+            for future in tqdm(
+                futures, total=len(futures), desc="Processing records", unit="rec"
+            ):
+                future.result()  # This will re-raise any exceptions encountered in the threads
+        else:
+            # Default: periodic log messages, which render cleanly in Airflow's
+            # log viewer
+            futures = []
+            count = 0
+            for record in todos:
+                futures.append(
+                    executor.submit(process_record, record, knack_obj, app, count)
+                )
+                count += 1
 
-    for future in futures:
-        future.result()  # This will re-raise any exceptions encountered in the threads
+            for future in futures:
+                future.result()  # This will re-raise any exceptions encountered in the threads
 
 
 if __name__ == "__main__":
