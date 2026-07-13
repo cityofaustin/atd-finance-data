@@ -7,7 +7,7 @@ BUCKET=
 KNACK_API_KEY=
 KNACK_APP_ID=
 
-# TPW Finance Oracle DB (1pass: atd-finance-data)
+# Finance Data Warehouse Oracle DB (1pass: atd-finance-data)
 HOST=
 PASSWORD=
 PORT=

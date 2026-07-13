@@ -75,3 +75,10 @@ Required environmental variables, which are available in the DTS credential stor
 - `AWS_SECRET_ACCESS_KEY`: The secret key for your AWS account
 - `KNACK_APP_ID`: The Knack app ID of the destiantion knack app
 - `KNACK_API_KEY`: The kanck API key of the destination knack app
+
+You can also pass a `-p` or `--progress-bar` flag to see a progress bar while the script is running. This can be helpful
+if you are running this script on a large dataset for the first time.
+
+```shell
+$ python s3_to_knack.py task_orders data-tracker -p
+```
