@@ -107,7 +107,7 @@ FIELD_MAPS = {
                 "handler": add_comma_separator,
             },
             {
-                "src": "TASK_ORDER_BAL",
+                "src": "BALANCE",
                 "data-tracker": "field_3686",
                 "finance-purchasing": "field_997",
                 "handler": add_comma_separator,
@@ -134,6 +134,18 @@ FIELD_MAPS = {
                 "data-tracker": "field_3807",
                 "finance-purchasing": "field_998",
                 "handler": string_list_order,
+            },
+            {
+                "src": "TOTAL_CHARGES",
+                "data-tracker": None,
+                "finance-purchasing": "field_1521",
+                "handler": add_comma_separator,
+            },
+            {
+                "src": "YTD_CHARGE",
+                "data-tracker": None,
+                "finance-purchasing": "field_1523",
+                "handler": add_comma_separator,
             },
             {
                 # appends modified date
