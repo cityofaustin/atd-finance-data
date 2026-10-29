@@ -137,13 +137,13 @@ FIELD_MAPS = {
             },
             {
                 "src": "TOTAL_CHARGES",
-                "data-tracker": None,
+                "data-tracker": "field_5756",
                 "finance-purchasing": "field_1521",
                 "handler": add_comma_separator,
             },
             {
                 "src": "YTD_CHARGE",
-                "data-tracker": None,
+                "data-tracker": "field_5757",
                 "finance-purchasing": "field_1523",
                 "handler": add_comma_separator,
             },
