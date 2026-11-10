@@ -16,10 +16,12 @@ QUERIES = {
         atd_tk.TASK_ORDER_TYPE,
         atd_tk.TK_CURR_AMOUNT,
         atd_tk.CHARGED_AMOUNT,
-        atd_tk.TASK_ORDER_BAL,
+        atd_tk.BALANCE,
         atd_tk.TASK_ORDER_ESTIMATOR,
         atd_tk.LN_AMOUNT,
         atd_tk.TASK_ORDER_REM_AMT,
+        atd_tk.TOTAL_CHARGES,
+        atd_tk.YTD_CHARGE,
         buyer_tk.BYR_FDU
     FROM
         DEPT_2400_TK_VW atd_tk
@@ -65,7 +67,7 @@ QUERIES = {
     "master_agreements": """
     SELECT
         DOC_CD,
-        DOC_DEPT_CD,
+        TO_NUMBER(DOC_DEPT_CD) AS DOC_DEPT_CD,
         DOC_ID,
         DOC_DSCR,
         DOC_PHASE_CD,

@@ -3,7 +3,6 @@
 # python s3_to_knack.py task_orders data-tracker
 """ Download financial data from AWS S3 and upsert to a Knack app"""
 import argparse
-from concurrent.futures import ThreadPoolExecutor
 import json
 import logging
 import os
@@ -81,8 +80,8 @@ def get_pks(fields, app_name):
 
 
 def is_equal(rec_current, rec_knack, keys):
-    tests = [rec_current[key] == rec_knack[key] for key in keys]
-    return all(tests)
+    diff_keys = [key for key in keys if rec_current[key] != rec_knack[key]]
+    return len(diff_keys) == 0, diff_keys
 
 
 def create_mapped_record(rec_current, field_map, app_name):
@@ -130,26 +129,17 @@ def handle_records(records_current, records_knack, knack_pk, field_map, app_name
                 # # handlers) before we determine if this record needs to be
                 # # created/modified, this way we make sure we use apples <> apples
                 # # when comparing the old vs new record
-                if not is_equal(rec_current, rec_knack, compare_keys):
-                    rec_current["id"] = rec_knack["id"]
-                    todos.append(rec_current)
+                equal, diff_keys = is_equal(rec_current, rec_knack, compare_keys)
+                if not equal:
+                    rec_to_update = {key:rec_current[key] for key in diff_keys}
+                    rec_to_update["id"] = rec_knack["id"]
+                    todos.append(rec_to_update)
 
                 break
         if not matched:
             todos.append(rec_current)
 
     return todos
-
-
-# for dev
-# def to_csv(data):
-#     import csv
-
-#     with open("bob.csv", "w") as fout:
-#         writer = csv.DictWriter(fout, fieldnames=data[0].keys())
-#         writer.writeheader()
-#         writer.writerows(data)
-
 
 def apply_src_data_filter(records_current, src_data_filter_func):
     """Filter records from financial DB"""
@@ -245,33 +235,17 @@ def main():
 
     logging.info(f"{len(todos)} records to process.")
 
-    # Process todos with 10 workers
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        if args.progress_bar:
-            # tqdm progress bar (best for interactive/terminal use; the
-            # carriage-return redraws don't render cleanly in Airflow logs)
-            futures = [
-                executor.submit(process_record, record, knack_obj, app)
-                for record in todos
-            ]
-            for future in tqdm(
-                futures, total=len(futures), desc="Processing records", unit="rec"
-            ):
-                future.result()  # This will re-raise any exceptions encountered in the threads
-        else:
-            # Default: periodic log messages, which render cleanly in Airflow's
-            # log viewer
-            futures = []
-            count = 0
-            for record in todos:
-                futures.append(
-                    executor.submit(process_record, record, knack_obj, app, count)
-                )
-                count += 1
-
-            for future in futures:
-                future.result()  # This will re-raise any exceptions encountered in the threads
-
+    # Process todos sequentially
+    if args.progress_bar:
+        # tqdm progress bar (best for interactive/terminal use; the
+        # carriage-return redraws don't render cleanly in Airflow logs)
+        for record in tqdm(todos, total=len(todos), desc="Processing records", unit="rec"):
+            process_record(record, knack_obj, app)
+    else:
+        # Default: periodic log messages, which render cleanly in Airflow's
+        # log viewer
+        for count, record in enumerate(todos):
+            process_record(record, knack_obj, app, count)
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
